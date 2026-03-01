@@ -1,0 +1,25 @@
+[package]
+name = "openfang-sq"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "SQ scrollspace integration for the OpenFang Agent OS"
+
+[dependencies]
+openfang-types = { path = "../openfang-types" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+# SQ daemon IPC
+shared_memory = { workspace = true }
+raw_sync = { workspace = true }
+
+# Phext coordinate handling
+libphext = { workspace = true }
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+tempfile = { workspace = true }

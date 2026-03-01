@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/openfang-types",
     "crates/openfang-memory",
+    "crates/openfang-sq",
     "crates/openfang-runtime",
     "crates/openfang-wire",
     "crates/openfang-api",
@@ -55,6 +56,11 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 # Database
 rusqlite = { version = "0.31", features = ["bundled", "serde_json"] }
+
+# SQ scrollspace (phext-native storage)
+shared_memory = "0.12"
+raw_sync = "0.1"
+libphext = "0.3"
 
 # CLI
 clap = { version = "4", features = ["derive"] }
