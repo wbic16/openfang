@@ -919,6 +919,47 @@ impl Default for ThinkingConfig {
     }
 }
 
+/// SQ daemon configuration for 9D phext-based memory storage.
+///
+/// SQ uses shared memory IPC for high-performance local communication.
+/// Configure in config.toml:
+/// ```toml
+/// [sq]
+/// enabled = true
+/// auto_start = true
+/// phext_file = "openfang.phext"
+/// namespace = 1
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SqConfig {
+    /// Enable SQ daemon integration.
+    pub enabled: bool,
+    /// Path to SQ binary (defaults to `sq` in PATH).
+    pub binary_path: Option<String>,
+    /// Phext file to load (defaults to "openfang.phext" in data_dir).
+    pub phext_file: String,
+    /// Namespace for this OpenFang instance (1-127).
+    pub namespace: usize,
+    /// Auto-start daemon if not running.
+    pub auto_start: bool,
+    /// Use SQ as primary memory backend (false = supplement SQLite).
+    pub primary: bool,
+}
+
+impl Default for SqConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            binary_path: None,
+            phext_file: "openfang.phext".to_string(),
+            namespace: 1,
+            auto_start: true,
+            primary: false,
+        }
+    }
+}
+
 /// Top-level kernel configuration.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -1046,6 +1087,9 @@ pub struct KernelConfig {
     /// OAuth client ID overrides for PKCE flows.
     #[serde(default)]
     pub oauth: OAuthConfig,
+    /// SQ daemon configuration for 9D phext-based memory storage.
+    #[serde(default)]
+    pub sq: Option<SqConfig>,
 }
 
 /// OAuth client ID overrides for PKCE flows.
@@ -1213,6 +1257,7 @@ impl Default for KernelConfig {
             budget: BudgetConfig::default(),
             provider_urls: HashMap::new(),
             oauth: OAuthConfig::default(),
+            sq: None,
         }
     }
 }
@@ -1305,6 +1350,7 @@ impl std::fmt::Debug for KernelConfig {
                 &format!("{} provider(s)", self.auth_profiles.len()),
             )
             .field("thinking", &self.thinking.is_some())
+            .field("sq", &self.sq.as_ref().map(|s| s.enabled))
             .finish()
     }
 }
