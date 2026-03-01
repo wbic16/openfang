@@ -5,6 +5,11 @@ edition.workspace = true
 license.workspace = true
 description = "Memory substrate for the OpenFang Agent OS"
 
+[features]
+default = []
+# Enable SQ daemon mode integration (requires running SQ daemon)
+sq-daemon = ["shared_memory", "raw_sync"]
+
 [dependencies]
 openfang-types = { path = "../openfang-types" }
 tokio = { workspace = true }
@@ -17,6 +22,10 @@ uuid = { workspace = true }
 thiserror = { workspace = true }
 async-trait = { workspace = true }
 tracing = { workspace = true }
+
+# SQ daemon mode dependencies (optional)
+shared_memory = { version = "0.12", optional = true }
+raw_sync = { version = "0.1", optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
