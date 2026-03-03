@@ -22,11 +22,13 @@
 
 mod client;
 mod coordinate;
+mod federation;
 mod protocol;
 mod store;
 
 pub use client::{SqClient, CoordinateAllocator};
 pub use coordinate::PhextCoordinate;
+pub use federation::{coordinates, TimeDimension, WuxingElement, PlatonicTranscendental, EMERGENCY_PHOWA};
 pub use protocol::{SqRequest, SqResponse, SqCommand};
 pub use store::SqStructuredStore;
 
