@@ -129,6 +129,8 @@ pub struct OpenFangKernel {
     pub whatsapp_gateway_pid: Arc<std::sync::Mutex<Option<u32>>>,
     /// Channel adapters registered at bridge startup (for proactive `channel_send` tool).
     pub channel_adapters: dashmap::DashMap<String, Arc<dyn openfang_channels::types::ChannelAdapter>>,
+    /// SQ daemon manager (11D phext coordinate-based memory backend).
+    pub sq_daemon: Option<Arc<crate::sq_daemon::SqDaemon>>,
     /// Weak self-reference for trigger dispatch (set after Arc wrapping).
     self_handle: OnceLock<Weak<OpenFangKernel>>,
 }
@@ -827,6 +829,31 @@ impl OpenFangKernel {
         let initial_broadcast = config.broadcast.clone();
         let auto_reply_engine = crate::auto_reply::AutoReplyEngine::new(config.auto_reply.clone());
 
+        // Initialize SQ daemon if enabled
+        let sq_daemon = if let Some(ref sq_config) = config.sq {
+            if sq_config.enabled {
+                let daemon = crate::sq_daemon::SqDaemon::new(
+                    sq_config.clone(),
+                    config.data_dir.clone(),
+                );
+                // Start daemon if auto_start is enabled
+                if sq_config.auto_start {
+                    // Spawn startup in background (don't block boot)
+                    let daemon_clone = daemon.clone();
+                    tokio::spawn(async move {
+                        if let Err(e) = daemon_clone.start().await {
+                            tracing::error!("Failed to start SQ daemon: {}", e);
+                        }
+                    });
+                }
+                Some(Arc::new(daemon))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         let kernel = Self {
             config,
             registry: AgentRegistry::new(),
@@ -873,6 +900,7 @@ impl OpenFangKernel {
             booted_at: std::time::Instant::now(),
             whatsapp_gateway_pid: Arc::new(std::sync::Mutex::new(None)),
             channel_adapters: dashmap::DashMap::new(),
+            sq_daemon,
             self_handle: OnceLock::new(),
         };
 
@@ -3438,6 +3466,34 @@ impl OpenFangKernel {
     /// data so agents are restored on the next boot.
     pub fn shutdown(&self) {
         info!("Shutting down OpenFang kernel...");
+
+        // Shutdown SQ daemon if running
+        if let Some(ref daemon) = self.sq_daemon {
+            info!("Shutting down SQ daemon...");
+            let daemon_clone = Arc::clone(daemon);
+            let shutdown_task = tokio::runtime::Handle::try_current()
+                .ok()
+                .and_then(|handle| {
+                    Some(handle.spawn(async move {
+                        if let Err(e) = daemon_clone.shutdown().await {
+                            tracing::error!("SQ daemon shutdown error: {}", e);
+                        }
+                    }))
+                });
+            // Best-effort wait for shutdown (timeout after 3 seconds)
+            if let Some(task) = shutdown_task {
+                let _ = tokio::runtime::Handle::try_current()
+                    .ok()
+                    .and_then(|handle| {
+                        handle.block_on(async {
+                            tokio::time::timeout(
+                                std::time::Duration::from_secs(3),
+                                task
+                            ).await
+                        }).ok()
+                    });
+            }
+        }
 
         // Kill WhatsApp gateway child process if running
         if let Ok(guard) = self.whatsapp_gateway_pid.lock() {
