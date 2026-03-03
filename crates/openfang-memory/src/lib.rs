@@ -29,4 +29,4 @@ mod substrate;
 pub use substrate::MemorySubstrate;
 
 // Re-export SQ types for convenience
-pub use sq::{PhextCoordinate, SqClient, SqCommand, SqRequest, SqResponse};
+pub use sq::{CoordinateAllocator, PhextCoordinate, SqClient, SqCommand, SqRequest, SqResponse, SqStructuredStore};

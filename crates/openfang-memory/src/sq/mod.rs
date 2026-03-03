@@ -14,14 +14,21 @@
 //! - `1.1.1/1.1.1/1.1.1` → command
 //! - `1.1.1/1.1.1/1.1.2` → coordinate
 //! - `1.1.1/1.1.1/1.1.3` → content
+//!
+//! ## Store Adapters
+//!
+//! - `SqStructuredStore` — Key-value store backed by SQ coordinates
+//! - (planned) `SqSessionStore` — Session/message store
 
 mod client;
 mod coordinate;
 mod protocol;
+mod store;
 
-pub use client::SqClient;
+pub use client::{SqClient, CoordinateAllocator};
 pub use coordinate::PhextCoordinate;
 pub use protocol::{SqRequest, SqResponse, SqCommand};
+pub use store::SqStructuredStore;
 
 #[cfg(test)]
 mod tests;
