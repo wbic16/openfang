@@ -18,6 +18,14 @@ thiserror = { workspace = true }
 async-trait = { workspace = true }
 tracing = { workspace = true }
 
+# SQ backend integration (experimental)
+# sq-client = { version = "0.5", optional = true }
+# TODO: Add actual SQ client dependency when available
+
 [dev-dependencies]
 tokio-test = { workspace = true }
 tempfile = { workspace = true }
+
+[features]
+default = []
+sq-backend = []  # Enable SQ daemon backend (experimental)

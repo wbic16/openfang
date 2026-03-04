@@ -6,7 +6,16 @@
 //! - **Knowledge graph** (SQLite): Entities and relations
 //!
 //! Agents interact with a single `Memory` trait that abstracts over all three stores.
+//!
+//! ## SQ Integration (Experimental)
+//!
+//! The `backend` module provides an abstraction layer allowing multiple storage engines:
+//! - `SqliteBackend` (default): Original SQLite-based storage
+//! - `SqDaemonBackend` (experimental): Phext-native storage via SQ daemon
+//!
+//! Enable SQ backend with feature flag: `--features sq-backend`
 
+pub mod backend;
 pub mod consolidation;
 pub mod knowledge;
 pub mod migration;
